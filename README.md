@@ -13,7 +13,7 @@ Note: Always vendor your dependencies or fix on a specific version tag.
 ```go
 import github.com/blang/studip
 
-jar, _ := cookiejar.New(nil)
+jar, err := cookiejar.New(nil)
 client := &http.Client{}
 client.Jar = jar
 
@@ -21,12 +21,11 @@ api := &studip.API{
     Client: client,
 }
 
-err = api.Login(username, password)
-if err != nil {
-    t.Fatalf("Login failed: %s\n", err)
-}
+err := api.Login(username, password)
 
-tree, _ := api.DocumentTree()
+tree, err := api.DocumentTree()
+
+reader, err := api.GetFile("file_id")
 ```
 
 Also check the [GoDocs](http://godoc.org/github.com/blang/studip).
@@ -36,6 +35,7 @@ Features
 
 - Shibboleth SAML Login
 - DocumentTree
+- GetFileContent
 
 Motivation
 -----

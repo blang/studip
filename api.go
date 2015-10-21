@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"html"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -81,6 +82,33 @@ func (a *API) DocumentTree() (*DocumentTree, error) {
 		return nil, err
 	}
 	return &docTree, nil
+}
+
+// GetFile returns an io.Reader for the requested file.
+// If the file does not exist, an StatusCodeError with Code: 404 is returned.
+func (a *API) GetFile(fileid string) (io.ReadCloser, error) {
+	if fileid == "" {
+		return nil, fmt.Errorf("Invalid fileid")
+	}
+
+	req, err := http.NewRequest("GET", StudIPAPIBaseURL+"/file/"+fileid+"/content", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	a.applyHeader(req)
+
+	resp, err := a.Client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	if code := resp.StatusCode; code != http.StatusOK {
+		return nil, &StatusCodeError{
+			Code: code,
+			Msg:  fmt.Sprintf("Invalid status code: %d", code),
+		}
+	}
+	return resp.Body, nil
 }
 
 // applyHeader applies the api header and default user-agent.
